@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LSTM Word Predictor</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding-top: 50px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 450px; }
+        h2 { color: #1a73e8; margin-bottom: 20px; }
+        textarea { width: 100%; height: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; resize: none; }
+        .controls { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+        select { padding: 8px; border-radius: 5px; border: 1px solid #ddd; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1557b0; }
+        #resultBox { margin-top: 25px; padding: 15px; background: #e8f0fe; border-radius: 8px; min-height: 40px; color: #333; }
+        .loading { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Text Generator</h2>
+    <textarea id="userInput" placeholder="Enter a starting sentence..."></textarea>
+    
+    <div class="controls">
+        <label>Predict: 
+            <select id="wordCount">
+                <option value="1">1 word</option>
+                <option value="3" selected>3 words</option>
+                <option value="5">5 words</option>
+                <option value="10">10 words</option>
+            </select>
+        </label>
+        <button onclick="generateText()">Generate</button>
+    </div>
+
+    <div id="resultBox">Generated text will appear here...</div>
+</div>
+
+<script>
+    function generateText() {
+        const text = document.getElementById('userInput').value;
+        const count = document.getElementById('wordCount').value;
+        const resultBox = document.getElementById('resultBox');
+
+        if (!text.trim()) {
+            resultBox.innerText = "Please enter some text first!";
+            return;
+        }
+
+        resultBox.innerHTML = '<span class="loading">AI is thinking...</span>';
+
+        fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, count: count })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result) {
+                resultBox.innerHTML = `<strong>Result:</strong> ${data.result}`;
+            } else {
+                resultBox.innerText = "Error: " + data.error;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultBox.innerText = "Check terminal! Is your model loaded?";
+        });
+    }
+</script>
+
+</body>
+</html>
